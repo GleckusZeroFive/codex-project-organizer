@@ -1,5 +1,7 @@
 # Minimal parent → subagents example
 
+**English** · [Русский](README.ru.md)
+
 Copy only the pieces your project needs:
 
 ```text

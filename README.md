@@ -1,12 +1,14 @@
 # Codex Project Organizer
 
-> Скилл-аудитор, который помогает превратить папку с кодом в понятное рабочее окружение для Codex — без дублирования правил, потерянного контекста и случайной публикации приватных заметок.
+**English** · [Русский](README.ru.md)
+
+> An audit skill that turns a folder of code into a clear Codex workspace—without duplicated rules, lost context, or accidentally published private notes.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-2ea44f.svg)](LICENSE)
 [![Python 3.11+](https://img.shields.io/badge/Python-3.11%2B-3776ab.svg)](https://www.python.org/)
 [![Codex Skill](https://img.shields.io/badge/Codex-Skill-111827.svg)](https://learn.chatgpt.com/docs/build-skills)
 
-Скилл решает не задачу «создать побольше конфигов», а задачу восстановления контекста: новый сеанс должен быстро понять границы проекта, обязательные правила, текущую фазу, следующий шаг и доступные возможности.
+The goal is not to create more configuration. The goal is context recovery: a fresh session should quickly understand the project boundary, mandatory rules, current phase, next action, and available capabilities.
 
 ```mermaid
 flowchart LR
@@ -20,39 +22,39 @@ flowchart LR
     A --> V[Verified result]
 ```
 
-## Что внутри
+## What's included
 
-- `SKILL.md` — основной workflow аудита и организации проекта.
-- `scripts/inspect_codex_project.py` — read-only инспектор discovery-цепочки, Git-границ, skills, MCP, hooks, memories и custom agents.
-- `references/architecture.md` — матрица владельцев информации и типовые формы проектов.
-- `examples/multi-agent/` — минимальный пример parent→subagents с отдельными ролями исследователя и ревьюера.
-- `tests/` — тесты инспектора без внешних Python-зависимостей.
+- `SKILL.md` — the audit and organization workflow.
+- `scripts/inspect_codex_project.py` — a read-only inspector for instruction discovery, Git boundaries, skills, MCP, hooks, memories, and custom agents.
+- `references/architecture.md` — the ownership matrix and common workspace shapes.
+- `examples/multi-agent/` — a minimal parent→subagents setup with explorer and reviewer roles.
+- `tests/` — dependency-free tests for the inspector.
 
-## Быстрый старт
+## Quick start
 
-### 1. Установить как пользовательский skill
+### 1. Install as a user skill
 
-Codex ищет пользовательские skills в `~/.agents/skills`. Клонируйте репозиторий туда:
+Codex discovers user skills under `~/.agents/skills`. Clone this repository there:
 
 ```bash
 git clone https://github.com/GleckusZeroFive/codex-project-organizer.git ~/.agents/skills/organize-codex-project
 ```
 
-Для PowerShell:
+PowerShell:
 
 ```powershell
 git clone https://github.com/GleckusZeroFive/codex-project-organizer.git "$HOME\.agents\skills\organize-codex-project"
 ```
 
-После установки вызовите скилл явно:
+Invoke the skill explicitly:
 
 ```text
-$organize-codex-project проверь этот workspace и предложи минимальную структуру для надёжных cold start сессий
+$organize-codex-project audit this workspace and propose the minimum structure required for reliable cold-start sessions
 ```
 
-Codex также может выбрать скилл автоматически, когда запрос совпадает с его `description`.
+Codex can also select the skill automatically when a request matches its `description`.
 
-### 2. Запустить инспектор напрямую
+### 2. Run the inspector directly
 
 ```powershell
 python scripts\inspect_codex_project.py --cwd D:\path\to\workspace
@@ -62,19 +64,19 @@ python scripts\inspect_codex_project.py --cwd D:\path\to\workspace
 python3 scripts/inspect_codex_project.py --cwd /path/to/workspace
 ```
 
-Для машинной обработки используйте `--json`; для CI-проверки, где предупреждение должно завершать команду с кодом `1`, добавьте `--strict`.
+Use `--json` for machine-readable output. Add `--strict` when warnings should produce exit code `1`, for example in CI.
 
-Инспектор не печатает значения конфигурации и секреты. Он показывает только структуру и имена зарегистрированных возможностей.
+The inspector does not print credential values. It reports structure and the names of registered capabilities.
 
 ## Parent → subagents
 
-Связка «родитель → дочерние агенты» складывается из трёх уровней:
+A parent/child setup has three layers:
 
-1. Родитель получает устойчивые правила проекта из `AGENTS.md` и workflow из skill.
-2. В `.codex/agents/*.toml` описываются узкие роли дочерних агентов.
-3. Родитель делегирует им независимые задачи и собирает краткие результаты в основной поток.
+1. The parent receives durable project guidance from `AGENTS.md` and reusable workflow instructions from the skill.
+2. `.codex/agents/*.toml` defines narrow custom-agent roles.
+3. The parent delegates independent tasks and integrates compact results into the main thread.
 
-Готовый нейтральный шаблон лежит в [`examples/multi-agent`](examples/multi-agent). В нём роли не привязаны к конкретной модели: можно оставить наследование настроек родителя или задать модель локально.
+A model-neutral template is available in [`examples/multi-agent`](examples/multi-agent). The roles can inherit the parent's settings or pin a model locally when there is a stable reason to do so.
 
 ```text
 project/
@@ -86,43 +88,43 @@ project/
         └── reviewer.toml
 ```
 
-Параллелизм полезен для независимого чтения, исследования и ревью. Несколько агентов, одновременно меняющих одни и те же файлы, чаще создают конфликты, чем ускоряют работу.
+Parallelism works best for independent reading, research, and review. Several agents editing the same files at once usually create more conflicts than speed.
 
-## Модель владения контекстом
+## Context ownership model
 
-| Что | Где хранить |
+| Information | Canonical location |
 |---|---|
-| Разовое ограничение | Текущий prompt/thread |
-| Личные правила для всех проектов | `~/.codex/AGENTS.md` |
-| Стабильные правила репозитория | Корневой или вложенный `AGENTS.md` |
-| Фаза, blockers, NEXT, разрешения | Один LIVE STATE файл/раздел |
-| Повторяемая процедура | Skill |
-| Роль дочернего агента | `~/.codex/agents/*.toml` или `.codex/agents/*.toml` |
-| Внешняя система | MCP/connector |
-| Механическая защита | Hook, CI, linter |
-| Воспоминания прошлых сессий | Memories как recall-слой, не канон |
+| One-off constraint | Current prompt/thread |
+| Personal rules for every project | `~/.codex/AGENTS.md` |
+| Stable repository rules | Root or nested `AGENTS.md` |
+| Phase, blockers, NEXT, authorization | One LIVE STATE file or section |
+| Repeatable procedure | Skill |
+| Child-agent role | `~/.codex/agents/*.toml` or `.codex/agents/*.toml` |
+| External system | MCP/connector |
+| Mechanical protection | Hook, CI, linter |
+| Recall from previous sessions | Memories as a recall layer, never the canon |
 
-Главный принцип: один изменяемый факт — один канонический владелец. Остальные файлы могут ссылаться на него, но не должны содержать расходящиеся копии.
+The core principle is simple: one mutable fact has one canonical owner. Other files may route to it, but should not contain drifting copies.
 
-## Типовые случаи
+## Common use cases
 
-- Новый репозиторий нужно подготовить к работе с Codex.
-- `AGENTS.md` разросся или конфликтует с `CLAUDE.md` и другими entrypoints.
-- Codex не видит глобальный skill, MCP или hook.
-- После compaction или нового сеанса теряется текущая фаза и `NEXT`.
-- Приватная обёртка клиента случайно смешивается с клиентским Git-репозиторием.
-- Нужно добавить custom agents и понять, что должен наследовать родитель, а что — дочерняя роль.
+- Prepare a new repository for Codex.
+- Reduce an oversized `AGENTS.md` or resolve conflicts with `CLAUDE.md` and other entrypoints.
+- Diagnose a missing global skill, MCP server, or hook.
+- Preserve phase and `NEXT` across compaction and fresh sessions.
+- Keep a private client wrapper outside the client's Git repository.
+- Add custom agents and make parent/child inheritance explicit.
 
-## Проверка
+## Verification
 
 ```bash
 python -m unittest discover -s tests -v
 python scripts/inspect_codex_project.py --cwd .
 ```
 
-Поддерживаются Windows, macOS и Linux с Python 3.11+ и установленным Git.
+Windows, macOS, and Linux are supported with Python 3.11+ and Git.
 
-## Официальная документация
+## Official documentation
 
 - [Custom instructions with AGENTS.md](https://learn.chatgpt.com/docs/agent-configuration/agents-md)
 - [Subagents](https://learn.chatgpt.com/docs/agent-configuration/subagents)
@@ -131,6 +133,6 @@ python scripts/inspect_codex_project.py --cwd .
 - [Hooks](https://learn.chatgpt.com/docs/hooks)
 - [Memories](https://learn.chatgpt.com/docs/customization/memories)
 
-## Лицензия
+## Contributing and license
 
-[MIT](LICENSE). Используйте, меняйте и пересылайте.
+See [CONTRIBUTING.md](CONTRIBUTING.md). Released under the [MIT License](LICENSE).
