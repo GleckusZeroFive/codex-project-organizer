@@ -1,0 +1,4 @@
+interface:
+  display_name: "Organize Codex Project"
+  short_description: "Audit and organize a workspace for Codex"
+  default_prompt: "Use $organize-codex-project to audit and organize this workspace for reliable Codex sessions."
